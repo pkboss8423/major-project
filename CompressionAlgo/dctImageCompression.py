@@ -1,5 +1,4 @@
 import os
-from turtle import width
 from PIL import Image
 from scipy.fftpack import dct, idct
 import numpy as np

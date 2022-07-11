@@ -9,21 +9,24 @@ from Utils.compressionRatio import compression_ratio
 from Utils.enhancement import enhacement
 from Utils.extensionFinder import extension
 from PIL import Image
-def start_image(filePath,compressionTypes,EnhancementType):
-    ext=extension(filePath)
+
+
+def start_image(filePath, compressionTypes, EnhancementType):
+    ext = extension(filePath)
     for compression in compressionTypes:
         if compression == "DCT":
-            pathdct=custom_dct(st,filePath,ext)
-            compression_ratio(st,filePath, pathdct, "DCT")
-            enhacement(st,filePath,pathdct,EnhancementType,ext)
+            pathdct = custom_dct(st, filePath, ext)
+            compression_ratio(st, filePath, pathdct, "DCT")
+            enhacement(st, filePath, pathdct, EnhancementType, ext)
         if compression == "DWT":
-            pathdwt = custom_dwt(st,filePath, ext)
+            pathdwt = custom_dwt(st, filePath, ext)
             compression_ratio(st, filePath, pathdwt, "DWT")
             enhacement(st, filePath, pathdwt, EnhancementType, ext)
         if compression == "Hybrid DCT-DWT":
-            pathdwt = custom_dwt_dct(st,filePath, ext)
+            pathdwt = custom_dwt_dct(st, filePath, ext)
             compression_ratio(st, filePath, pathdwt, "HYBRID DCT-DWT")
             enhacement(st, filePath, pathdwt, EnhancementType, ext)
+
 
 st.title('Main project')
 
@@ -42,7 +45,8 @@ def save_uploaded_file(uploadedfile):
         print("Some Error")
         return ""
 
-
+def start_video(path,compressionTypes):
+    pass
 if choice == 'image':
     st.title("image compression")
     image_file = st.file_uploader("Upload Image", type=['png', 'jpeg', 'jpg'])
@@ -51,21 +55,28 @@ if choice == 'image':
                         "FileType": image_file.type, "FileSize": (image_file.size)}
         st.write(file_details)
         path = save_uploaded_file(image_file)
-        st.image(Image.open(path),caption="Original Image",width=500)
+        st.image(Image.open(path), caption="Original Image", width=500)
         Compression = st.multiselect(
             'Select Types of Compression Algorithms',
             ['DCT', 'DWT', 'Hybrid DCT-DWT'])
-        Enhancers=st.radio(
+        Enhancers = st.radio(
             "Select Types of Enhancers Algorithms",
             ('AHE', 'CLAHE'))
         if st.button("Start"):
-            start_image(path,Compression,Enhancers)
+            start_image(path, Compression, Enhancers)
 elif choice == 'video':
     st.title("video compression")
-    video_file = open('FILENAME', 'rb')  # enter the filename with filepath
+    # enter the filename with filepath
+    path = 'C:/Users/prakh/Downloads/Video/sample1.mp4'
+    video_file = open(path, 'rb')
 
     video_bytes = video_file.read()  # reading the file
 
     st.video(video_bytes)  # displaying the video
-        
     
+    Compression = st.radio(
+        "Select Types of Compression Algorithms",
+        ('DCT', 'DWT', 'Hybrid DCT-DWT'))
+    
+    if st.button("Start"):
+        start_video(path, Compression)
