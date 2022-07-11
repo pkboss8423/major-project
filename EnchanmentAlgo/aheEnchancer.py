@@ -4,7 +4,7 @@ import numpy as np
 from Utils.createFolder import create_folder
 from PIL import Image
 
-def AHE(pathIn,ext):
+def AHE(st,pathIn,ext):
     img = cv2.imread(pathIn, 0)
 
     equ = cv2.equalizeHist(img)
@@ -16,5 +16,5 @@ def AHE(pathIn,ext):
     path = os.path.join(x, ahe_img)
     cv2.imwrite(path, equ)
     img = Image.open(path)
-    img.show()
+    st.image(img, caption="AHE Enhancment",  width=500)
     return path

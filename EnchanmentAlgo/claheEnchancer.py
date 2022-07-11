@@ -4,7 +4,7 @@ from Utils.createFolder import create_folder
 from PIL import Image
 
 
-def CLAHE(pathIn, ext):
+def CLAHE(st,pathIn, ext):
     image = cv2.imread(pathIn, 0)
 
     image = cv2.resize(image, (1920, 1280))
@@ -17,6 +17,6 @@ def CLAHE(pathIn, ext):
     path = os.path.join(x, clahe_img)
     cv2.imwrite(path, final_img)
     img = Image.open(path)
-    img.show()
+    st.image(img, caption="CLAHE Enhancement", width=500)
     print(path)
     return path

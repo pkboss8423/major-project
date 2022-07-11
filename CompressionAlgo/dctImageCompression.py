@@ -1,4 +1,5 @@
 import os
+from turtle import width
 from PIL import Image
 from scipy.fftpack import dct, idct
 import numpy as np
@@ -16,9 +17,21 @@ def idct2(a):
     return idct(idct(a.T, norm='ortho').T, norm='ortho')
 
 
-def custom_dct(file_loc,ext, hybrid=False):
+def custom_dct(st,file_loc,ext, hybrid=False):
     im = cv2.imread(file_loc)
-    im = cv2.resize(im, (1920, 1280))
+    wid = im.shape[1]
+
+
+    hgt = im.shape[0]
+    if hgt<1920:
+        h=hgt-150
+    else:
+        h=1920
+    if wid < 1280:
+        w = wid-150
+    else:
+        w = 1280
+    im = cv2.resize(im, (h, w))
 
     imF = dct2(im)
     im1 = idct2(imF)
@@ -33,5 +46,5 @@ def custom_dct(file_loc,ext, hybrid=False):
     image = Image.open(path)
     #image.show(title='Original:')
     if hybrid == False:
-        image.show(title="DCT:")
+        st.image(image,caption="DCT Image",width=500)
     return path

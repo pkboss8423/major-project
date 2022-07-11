@@ -93,7 +93,7 @@ def running(file, ext):
     return image
 
 
-def enhancer_(image, ext):
+def enhancer_(st,image, ext,hybrid):
 
     enhancer = ImageEnhance.Brightness(image)
     image = enhancer.enhance(2)
@@ -103,13 +103,16 @@ def enhancer_(image, ext):
 
     #plt.imsave(path,image)
     image.save(path)
-    image.show()
+    if hybrid==False:
+        st.image(image, caption="DWT Image", width=500)
+    elif hybrid:
+        st.image(image, caption="HYBRID DCT-DWT Image", width=500)
     return path
 
 
-def custom_dwt(image, ext=""):
+def custom_dwt(st,image, ext="",hybrid=False):
     a = running(image, ext)
-    b = enhancer_(a, ext)
+    b = enhancer_(st,a, ext,hybrid)
     #compression_ratio(image,b,"DWT")
     return b
 
