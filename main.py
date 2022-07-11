@@ -1,5 +1,4 @@
 import os
-from tkinter import *
 import streamlit as st
 from CompressionAlgo.dctImageCompression import custom_dct
 from CompressionAlgo.dwtImageCompression import custom_dwt
