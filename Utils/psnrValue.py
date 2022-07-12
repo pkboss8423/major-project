@@ -10,8 +10,8 @@ def PSNR(img1, img2):
 def send_path(pathIn, pathOut):
     original = cv2.imread(pathIn)
     compressed = cv2.imread(pathOut)
-    original = cv2.resize(original, (1920, 1280))
-    compressed = cv2.resize(compressed, (1920, 1280))
+    original = cv2.resize(original, (500, 600))
+    compressed = cv2.resize(compressed, (500, 600))
     value = PSNR(original, compressed)
 
     return value

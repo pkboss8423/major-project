@@ -1,14 +1,21 @@
+import tempfile
+import cv2 as cv
 import os
 import streamlit as st
 from CompressionAlgo.dctImageCompression import custom_dct
 from CompressionAlgo.dwtImageCompression import custom_dwt
 from CompressionAlgo.hybridImageCompression import custom_dwt_dct
+from CompressionAlgo.videoCompression import video_compression
 from EnchanmentAlgo.aheEnchancer import AHE
 from EnchanmentAlgo.claheEnchancer import CLAHE
 from Utils.compressionRatio import compression_ratio
 from Utils.enhancement import enhacement
 from Utils.extensionFinder import extension
 from PIL import Image
+from Utils.playVideo import play_video
+
+
+from Utils.videoSize import get_size
 
 
 def start_image(filePath, compressionTypes, EnhancementType):
@@ -45,8 +52,30 @@ def save_uploaded_file(uploadedfile):
         print("Some Error")
         return ""
 
-def start_video(path,compressionTypes):
-    pass
+
+def run_video(path):
+    video_file = open(path, 'rb')
+    video_bytes = video_file.read()  # reading the file
+    st.video(video_bytes)
+
+
+def start_video(path, compressionTypes):
+    if compressionTypes == "DCT":
+        pathOut = video_compression(path, "DCT")
+        #st.write(pathOut)
+        #play_video(pathOut, "DCT")
+        get_size(st, path, pathOut, "DCT")
+
+    if compressionTypes == "DWT":
+        pathOut = video_compression(path, "DWT")
+        #play_video(pathOut, "DWT")
+        get_size(st, path, pathOut, "DWT")
+    if compressionTypes == "Hybrid DCT-DWT":
+        pathOut = video_compression(path, "Hybrid DCT-DWT")
+        #play_video(pathOut, "Hybrid DCT-DWT")
+        get_size(st, path, pathOut, "Hybrid DCT-DWT")
+
+
 if choice == 'image':
     st.title("image compression")
     image_file = st.file_uploader("Upload Image", type=['png', 'jpeg', 'jpg'])
@@ -66,17 +95,19 @@ if choice == 'image':
             start_image(path, Compression, Enhancers)
 elif choice == 'video':
     st.title("video compression")
-    # enter the filename with filepath
-    path = 'C:/Users/prakh/Downloads/Video/sample1.mp4'
-    video_file = open(path, 'rb')
+    f = st.file_uploader("Upload file")
+    tfile = tempfile.NamedTemporaryFile(delete=False)
+    if f is not None:
+        # tfile.write(f.read())
+        file_details = {"Filename": f.name,
+                        "FileType": f.type, "FileSize": (f.size)}
+        st.write(file_details)
+        path = save_uploaded_file(f)
+        run_video(path)
 
-    video_bytes = video_file.read()  # reading the file
-
-    st.video(video_bytes)  # displaying the video
-    
     Compression = st.radio(
         "Select Types of Compression Algorithms",
         ('DCT', 'DWT', 'Hybrid DCT-DWT'))
-    
+
     if st.button("Start"):
         start_video(path, Compression)

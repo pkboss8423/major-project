@@ -1,10 +1,9 @@
 import os
+from turtle import width
 from PIL import Image
 from scipy.fftpack import dct, idct
 import numpy as np
-from PIL import Image
 from Utils.createFolder import create_folder
-global chuvin
 import cv2
 
 
@@ -16,18 +15,20 @@ def idct2(a):
     return idct(idct(a.T, norm='ortho').T, norm='ortho')
 
 
-def custom_dct(st,file_loc,ext, hybrid=False):
+def custom_dct(st, file_loc, ext, hybrid=False):
     im = cv2.imread(file_loc)
     wid = im.shape[1]
 
-
     hgt = im.shape[0]
-    if hgt<1920:
-        h=hgt-150
+    x=150
+    y=(x/hgt)*100
+    z=(wid*y)/100
+    if hgt < 1920:
+        h = hgt-x
     else:
-        h=1920
+        h = 1920
     if wid < 1280:
-        w = wid-150
+        w = wid-z
     else:
         w = 1280
     im = cv2.resize(im, (h, w))
@@ -43,7 +44,7 @@ def custom_dct(st,file_loc,ext, hybrid=False):
     cv2.imwrite(path, im1)
     im1 = np.float32(im1)
     image = Image.open(path)
-    #image.show(title='Original:')
+    # image.show(title='Original:')
     if hybrid == False:
-        st.image(image,caption="DCT Image",width=500)
+        st.image(image, caption="DCT Image", width=500)
     return path

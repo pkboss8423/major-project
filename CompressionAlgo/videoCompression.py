@@ -1,3 +1,4 @@
+
 from scipy.fftpack import dct, idct
 import numpy as np
 import cv2
@@ -7,18 +8,18 @@ import shutil
 import pywt
 import re
 from os.path import isfile, join
+from PIL import Image, ImageEnhance
+import numpy
+import streamlit as st
 
 
-def empty_path(pathOut):
-    for filename in os.listdir(pathOut):
-        file_path = os.path.join(pathOut, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+def create_folder():
+    userprofile = os.environ['USERPROFILE']
+    path = os.path.join(userprofile, 'Documents')
+    if not os.path.exists(path+"/C_Videos"):
+        os.makedirs(path+"/C_Videos")
+    path = os.path.join(userprofile, 'Documents', 'C_videos')
+    return path
 
 
 def frame_rate(cam):
@@ -45,11 +46,11 @@ def convert_frames_to_video(pathIn, pathOut, fps):
     sorted_images = sorted(files, key=natural_sort_key)
     for i in range(len(sorted_images)):
         filename = pathIn + sorted_images[i]
-        # reading each files
+        #reading each files
         img = cv2.imread(filename)
         height, width, layers = img.shape
         size = (width, height)
-        # inserting the frames into an image array
+        #inserting the frames into an image array
         frame_array.append(img)
 
     out = cv2.VideoWriter(pathOut, cv2.VideoWriter_fourcc(*'MP4V'), fps, size)
@@ -57,35 +58,107 @@ def convert_frames_to_video(pathIn, pathOut, fps):
     for i in range(len(frame_array)):
         # writing to a image array
         out.write(frame_array[i])
-    print("Video Finished")
+    st.write("Video Finished")
     out.release()
 
 
-def custom_dwt(A):
-    plt.rcParams['figure.figsize'] = [16, 16]
-    plt.rcParams.update({'font.size': 18})
+def max_ndarray(mat):
+   
+    return np.amax(mat) if type(mat).__name__ == 'ndarray' else 0
 
-    B = np.mean(A, -1)
 
-    n = 4
-    w = 'db1'
-    coeffs = pywt.wavedec2(B, wavelet=w, level=n)
+def extract_rgb_coeff(img):
+  
+    (width, height) = img.size
+    img = img.copy()
 
-    coeff_arr, coeff_slices = pywt.coeffs_to_array(coeffs)
+    mat_r = numpy.empty((width, height))
+    mat_g = numpy.empty((width, height))
+    mat_b = numpy.empty((width, height))
 
-    Csort = np.sort(np.abs(coeff_arr.reshape(-1)))
+    for i in range(width):
+        for j in range(height):
+            (r, g, b) = img.getpixel((i, j))
+            mat_r[i, j] = r
+            mat_g[i, j] = g
+            mat_b[i, j] = b
 
-    keep = 0.1
+    coeffs_r = pywt.dwt2(mat_r, 'haar')
 
-    thresh = Csort[int(np.floor((1-keep)*len(Csort)))]
-    ind = np.abs(coeff_arr) > thresh
-    Cfilt = coeff_arr * ind
+    coeffs_g = pywt.dwt2(mat_g, 'haar')
 
-    coeffs_filt = pywt.array_to_coeffs(
-        Cfilt, coeff_slices, output_format='wavedec2')
+    coeffs_b = pywt.dwt2(mat_b, 'haar')
 
-    Arecon = pywt.waverec2(coeffs_filt, wavelet=w)
-    return Arecon
+    return (coeffs_r, coeffs_g, coeffs_b)
+
+
+def img_from_dwt_coeff(coeff_dwt):
+   
+    # Channel Red
+    (coeffs_r, coeffs_g, coeffs_b) = coeff_dwt
+
+    cc = numpy.array((coeffs_r, coeffs_g, coeffs_b), dtype=object)
+
+    (width, height) = (len(coeffs_r[0]), len(coeffs_r[0][0]))
+
+    cARed = numpy.array(coeffs_r[0])
+    
+    # Channel Green
+    cAGreen = numpy.array(coeffs_g[0])
+   
+    # Channel Blue
+    cABlue = numpy.array(coeffs_b[0])
+    
+
+    # maxValue per channel par matrix
+    cAMaxRed = max_ndarray(cARed)
+    cAMaxGreen = max_ndarray(cAGreen)
+    cAMaxBlue = max_ndarray(cABlue)
+
+    
+
+    # Image object init
+    dwt_img = Image.new('RGB', (width, height), (0, 0, 20))
+    # cA reconstruction
+
+    '''
+    The image formed from the low frequnecy of the images which contains the main content of the image
+    '''
+    for i in range(width):
+        for j in range(height):
+            R = cARed[i][j]
+            R = (R/cAMaxRed)*100.0
+            G = cAGreen[i][j]
+            G = (G/cAMaxGreen)*100.0
+            B = cABlue[i][j]
+            B = (B/cAMaxBlue)*100.0
+            new_value = (int(R), int(G), int(B))
+            dwt_img.putpixel((i, j), new_value)
+
+    return dwt_img
+
+
+def load_img(path):
+
+    try:
+        return Image.open(path)
+    except IOError:
+        return None
+
+
+def running(file):
+    img = load_img(file)
+    coef = extract_rgb_coeff(img)
+    image = img_from_dwt_coeff(coef)
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(2)
+    return image
+
+
+def custom_dwt(image):
+    a = running(image)
+
+    return a
 
 
 def dct2(a):
@@ -105,30 +178,33 @@ def custom_dct(a):
 
 def custom_dwt_dct(A):
     x = custom_dct(A)
-    y = custom_dwt(x)
+    z = create_folder()
+    comp_file = 'frame.jpg'
+    path = os.path.join(z, comp_file)
+    cv2.imwrite(path, x)
+    y = custom_dwt(path)
     return y
 
 
-def extractImages(pathIn, pathOut, x):
-    x = x.lower()
+def extractImages(pathIn, pathOut,x):
     count = 0
     vidcap = cv2.VideoCapture(pathIn)
     success, image = vidcap.read()
     success = True
-    # x = int(input("""Enter 1 for DCT Compression:
-    # Enter 2 for DWT Compression:
-    # Enter 3 for Hybrid DCT-DWT:"""))
-    while success and x == "dwt":
+    while success and x == "DWT":
         success, image = vidcap.read()
         if success == False:
             break
+        z = create_folder()
+        comp_file = 'frame.jpg'
+        path = os.path.join(z, comp_file)
+        cv2.imwrite(path, image)
 
-        image = custom_dwt(image)
+        image = custom_dwt(path)
 
-        cv2.imwrite(pathOut + "\\%d.jpg" %
-                    count, image)     # save frame as JPEG file
+        image.save(pathOut + "\\%d.jpg" % count)     # save frame as JPEG file
         count += 1
-    while success and x == "dct":
+    while success and x == "DCT":
         success, image = vidcap.read()
         if success == False:
             break
@@ -138,34 +214,43 @@ def extractImages(pathIn, pathOut, x):
         cv2.imwrite(pathOut + "\\%d.jpg" %
                     count, image)     # save frame as JPEG file
         count += 1
-    while success and x == "hybrid":
+    while success and x == "Hybrid DCT-DWT":
         success, image = vidcap.read()
         if success == False:
             break
 
         image = custom_dwt_dct(image)
 
-        cv2.imwrite(pathOut + "\\%d.jpg" %
-                    count, image)     # save frame as JPEG file
+        image.save(pathOut + "\\%d.jpg" % count)     # save frame as JPEG file
         count += 1
-    print("Frame Breaking Completed,total frames=", count)
+    st.write("Frame Breaking Completed,total frames=", count)
 
+def empty_path(pathOut):
+    for filename in os.listdir(pathOut):
+        file_path = os.path.join(pathOut, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+            
+def video_compression(pathIn,type):
+    path=create_folder()
+    if not os.path.exists(path+"/V_frames"):
+        os.makedirs(path+"/V_frames")
+    path = os.path.join(path, 'V_frames')
+    pathOut = path
 
-def video_main(pathIn, expect=""):
-    # pathIn = 'C:/Users/prakh/Downloads/Video/sample1.mp4'
-    userprofile = os.environ['USERPROFILE']
-    path = os.path.join(userprofile, 'Documents')
-    if not os.path.exists(path+"/VideoFolder"):
-        os.makedirs(path+"/VideoFolder")
-    path = os.path.join(userprofile, 'Documents', 'VideoFolder')
-    # pathOut = "C:/Users/prakh/Downloads/Video/New folder"
-    empty_path(path)
-    extractImages(pathIn, path, expect)
-    # pathIn = 'C:/Users/prakh/Downloads/Video/New folder/'
-    # pathOut = 'C:/Users/prakh/Downloads/Video/video1.mp4'
-    pathOut = os.path.join(userprofile, 'Documents',
-                           'VideoFolder', 'output_vid.mp4')
+    empty_path(pathOut)
+
+    extractImages(pathIn, pathOut,type)
+    pathx = path+"/"
+    pathy = create_folder()
+    pathOut=os.path.join(pathy,f"{type}_Output_video.mp4")
+    #st.write(pathx,pathOut)
     cam = cv2.VideoCapture(pathIn)
     fps = frame_rate(cam)
-    convert_frames_to_video(pathIn, pathOut, fps)
+    convert_frames_to_video(pathx, pathOut, fps)
     return pathOut
