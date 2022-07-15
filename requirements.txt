@@ -1,7 +1,8 @@
 matplotlib==3.3.4
 numpy==1.20.1
 opencv-python==4.5.5.62
-opencv-python-headless==4.5.3.56
+opencv-python-headless==4.6.0.66
+opencv-contrib-python-headless=4.6.0.66
 pandas==1.2.4
 Pillow==9.2.0
 PyWavelets==1.1.1
