@@ -4,7 +4,7 @@ import numpy as np
 import numpy
 import os
 import pywt
-from Utils.createFolder import create_folder
+from Utils.createFolder import  create_image_folder
 
 def max_ndarray(mat):
     return np.amax(mat) if type(mat).__name__ == 'ndarray' else 0
@@ -98,7 +98,7 @@ def enhancer_(st,image, ext,hybrid):
     enhancer = ImageEnhance.Brightness(image)
     image = enhancer.enhance(2)
     file_enh = "final_dwt"+ext
-    x = create_folder()
+    x = create_image_folder()
     path = os.path.join(x, file_enh)
 
     #plt.imsave(path,image)
@@ -110,9 +110,9 @@ def enhancer_(st,image, ext,hybrid):
     return path
 
 
-def custom_dwt(st,image, ext="",hybrid=False):
+def custom_dwt(st, image, ext="",hybrid=False):
     a = running(image, ext)
-    b = enhancer_(st,a, ext,hybrid)
+    b = enhancer_(st, a, ext,hybrid)
     #compression_ratio(image,b,"DWT")
     return b
 

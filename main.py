@@ -1,38 +1,44 @@
+from cProfile import run
 import tempfile
-import cv2 as cv
 import os
 import streamlit as st
 from CompressionAlgo.dctImageCompression import custom_dct
 from CompressionAlgo.dwtImageCompression import custom_dwt
 from CompressionAlgo.hybridImageCompression import custom_dwt_dct
 from CompressionAlgo.videoCompression import video_compression
-from EnchanmentAlgo.aheEnchancer import AHE
-from EnchanmentAlgo.claheEnchancer import CLAHE
 from Utils.compressionRatio import compression_ratio
 from Utils.enhancement import enhacement
 from Utils.extensionFinder import extension
 from PIL import Image
-from Utils.playVideo import play_video
-
-
+from Utils.morphHelper import morph
+from Utils.playVideo import run_video
 from Utils.videoSize import get_size
 
-
-def start_image(filePath, compressionTypes, EnhancementType):
+def start_image(filePath, compressionTypes, EnhancementType, Morp_op):
+    
     ext = extension(filePath)
     for compression in compressionTypes:
         if compression == "DCT":
             pathdct = custom_dct(st, filePath, ext)
-            compression_ratio(st, filePath, pathdct, "DCT")
-            enhacement(st, filePath, pathdct, EnhancementType, ext)
+            compression_ratio(st, filePath, pathdct,  "DCT")
+            if EnhancementType != "None":
+                enhacement(st, filePath, pathdct, EnhancementType, ext)
+            
+            morph(filePath, Morp_op)
         if compression == "DWT":
             pathdwt = custom_dwt(st, filePath, ext)
-            compression_ratio(st, filePath, pathdwt, "DWT")
-            enhacement(st, filePath, pathdwt, EnhancementType, ext)
+            compression_ratio(st, filePath, pathdwt, "DWT",)
+            if EnhancementType != "None":
+                enhacement(st, filePath, pathdwt, EnhancementType, ext)
+            
+            morph(filePath, Morp_op)
         if compression == "Hybrid DCT-DWT":
             pathdwt = custom_dwt_dct(st, filePath, ext)
             compression_ratio(st, filePath, pathdwt, "HYBRID DCT-DWT")
-            enhacement(st, filePath, pathdwt, EnhancementType, ext)
+            if EnhancementType != "None":
+                enhacement(st, filePath, pathdwt, EnhancementType, ext)
+            
+            morph(filePath, Morp_op)
 
 
 st.title('Main project')
@@ -53,30 +59,31 @@ def save_uploaded_file(uploadedfile):
         return ""
 
 
-def run_video(path):
-    video_file = open(path, 'rb')
-    video_bytes = video_file.read()  # reading the file
-    st.video(video_bytes)
+
 
 
 def start_video(path, compressionTypes):
     if compressionTypes == "DCT":
-        pathOut = video_compression(path, "DCT")
-        #st.write(pathOut)
-        #play_video(pathOut, "DCT")
+        pathOut ,pathnew= video_compression(path, "DCT")
+        run_video(st,pathnew)
         get_size(st, path, pathOut, "DCT")
+        
+        
+        
 
     if compressionTypes == "DWT":
-        pathOut = video_compression(path, "DWT")
-        #play_video(pathOut, "DWT")
+        pathOut,pathnew = video_compression(path, "DWT")
+        run_video(st,pathnew)
         get_size(st, path, pathOut, "DWT")
     if compressionTypes == "Hybrid DCT-DWT":
-        pathOut = video_compression(path, "Hybrid DCT-DWT")
-        #play_video(pathOut, "Hybrid DCT-DWT")
+        pathOut,pathnew = video_compression(path, "Hybrid DCT-DWT")
+        run_video(st,pathnew)
         get_size(st, path, pathOut, "Hybrid DCT-DWT")
 
 
+
 if choice == 'image':
+    
     st.title("image compression")
     image_file = st.file_uploader("Upload Image", type=['png', 'jpeg', 'jpg'])
     if image_file is not None:
@@ -89,10 +96,18 @@ if choice == 'image':
             'Select Types of Compression Algorithms',
             ['DCT', 'DWT', 'Hybrid DCT-DWT'])
         Enhancers = st.radio(
-            "Select Types of Enhancers Algorithms",
-            ('AHE', 'CLAHE'))
+            "Select Type of Enhancers Algorithms",
+            ('AHE', 'CLAHE', 'Both', 'None'),index=3)
+
+        st.write(
+            "Note:  We recommend to use morphological operations only for medical images.")
+        Morphological_operations = st.multiselect(
+            "Select Type of Morphological operation",
+            ['Erosion', 'Dilation', 'Opening', 'Closing', 'Gradient', 'Blackhat_tophat',  "None"])
         if st.button("Start"):
-            start_image(path, Compression, Enhancers)
+            start_image(path, Compression, Enhancers, Morphological_operations)
+            
+        
 elif choice == 'video':
     st.title("video compression")
     f = st.file_uploader("Upload file")

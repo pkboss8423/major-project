@@ -1,7 +1,7 @@
 import os
 import cv2
-from Utils.createFolder import create_folder
-from PIL import Image
+from Utils.createFolder import  create_image_folder
+#from PIL import Image
 
 
 def CLAHE(st,pathIn, ext):
@@ -12,11 +12,11 @@ def CLAHE(st,pathIn, ext):
     final_img = clahe.apply(image) + 30
     _, ordinary_img = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
 
-    x = create_folder()
+    x = create_image_folder()
     clahe_img = "clahe_img"+ext
     path = os.path.join(x, clahe_img)
     cv2.imwrite(path, final_img)
-    img = Image.open(path)
-    st.image(img, caption="CLAHE Enhancement", width=500)
-    print(path)
+    # img = Image.open(path)
+    st.image(final_img, caption="CLAHE Enhancement", width=500)
+    # print(path)
     return path

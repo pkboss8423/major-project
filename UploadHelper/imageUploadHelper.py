@@ -1,6 +1,6 @@
-from skimage.io import imread
+import cv2
 
-
-def imageUpload(pathIn):
-    instance = imread(pathIn)
+def image_Read(pathIn):
+    instance = cv2.imread(pathIn)
+    instance = cv2.cvtColor(instance, cv2.COLOR_BGR2GRAY)
     return instance

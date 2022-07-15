@@ -1,9 +1,9 @@
 
+from hashlib import new
 from scipy.fftpack import dct, idct
 import numpy as np
 import cv2
 import os
-import matplotlib.pylab as plt
 import shutil
 import pywt
 import re
@@ -12,24 +12,16 @@ from PIL import Image, ImageEnhance
 import numpy
 import streamlit as st
 
+from Utils.createFolder import create_video_folder, create_video_frames
 
-def create_folder():
-    userprofile = os.environ['USERPROFILE']
-    path = os.path.join(userprofile, 'Documents')
-    if not os.path.exists(path+"/C_Videos"):
-        os.makedirs(path+"/C_Videos")
-    path = os.path.join(userprofile, 'Documents', 'C_videos')
-    return path
+
 
 
 def frame_rate(cam):
     _, fo = cam.read()
     framei = cv2.cvtColor(fo, cv2.COLOR_BGR2GRAY)
-    bg_avg = np.float32(framei)
-    video_width = int(cam.get(3))
-    video_height = int(cam.get(4))
     fr = int(cam.get(5))
-    print("frame rate of stored video:::", fr)
+    st.write("frame rate of stored video:::", fr)
     return fr
 
 
@@ -53,7 +45,29 @@ def convert_frames_to_video(pathIn, pathOut, fps):
         #inserting the frames into an image array
         frame_array.append(img)
 
-    out = cv2.VideoWriter(pathOut, cv2.VideoWriter_fourcc(*'MP4V'), fps, size)
+    out = cv2.VideoWriter(
+        pathOut, cv2.VideoWriter_fourcc(*'MP4V'), fps, size)
+
+    for i in range(len(frame_array)):
+        # writing to a image array
+        out.write(frame_array[i])
+    st.write("Video Finished")
+    out.release()
+def convert_frames_to_video_diff(pathIn, pathOut, fps):
+    frame_array = []
+    files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
+    sorted_images = sorted(files, key=natural_sort_key)
+    for i in range(len(sorted_images)):
+        filename = pathIn + sorted_images[i]
+        #reading each files
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        size = (width, height)
+        #inserting the frames into an image array
+        frame_array.append(img)
+
+    out = cv2.VideoWriter(
+        pathOut, cv2.VideoWriter_fourcc(*'avc1'), fps, size)
 
     for i in range(len(frame_array)):
         # writing to a image array
@@ -173,12 +187,17 @@ def custom_dct(a):
     imF = dct2(a)
     im1 = idct2(imF)
     np.allclose(a, im1)
+    wid = im1.shape[1]
+    hgt = im1.shape[0]
+    wid = int(wid/2)
+    hgt = int(hgt/2)
+    im1 = cv2.resize(im1, (wid, hgt))
     return im1
 
 
 def custom_dwt_dct(A):
     x = custom_dct(A)
-    z = create_folder()
+    z = create_video_folder()
     comp_file = 'frame.jpg'
     path = os.path.join(z, comp_file)
     cv2.imwrite(path, x)
@@ -195,7 +214,7 @@ def extractImages(pathIn, pathOut,x):
         success, image = vidcap.read()
         if success == False:
             break
-        z = create_folder()
+        z = create_video_folder()
         comp_file = 'frame.jpg'
         path = os.path.join(z, comp_file)
         cv2.imwrite(path, image)
@@ -237,20 +256,22 @@ def empty_path(pathOut):
             print('Failed to delete %s. Reason: %s' % (file_path, e))
             
 def video_compression(pathIn,type):
-    path=create_folder()
-    if not os.path.exists(path+"/V_frames"):
-        os.makedirs(path+"/V_frames")
-    path = os.path.join(path, 'V_frames')
+    path=create_video_folder()
+    # if not os.path.exists(path+"/V_frames"):
+    #     os.makedirs(path+"/V_frames")
+    path = create_video_frames()
     pathOut = path
 
     empty_path(pathOut)
 
     extractImages(pathIn, pathOut,type)
     pathx = path+"/"
-    pathy = create_folder()
+    pathy = create_video_folder()
     pathOut=os.path.join(pathy,f"{type}_Output_video.mp4")
+    newpath = os.path.join(pathy, f"{type}_Output_video_prototype.mp4")
     #st.write(pathx,pathOut)
     cam = cv2.VideoCapture(pathIn)
     fps = frame_rate(cam)
     convert_frames_to_video(pathx, pathOut, fps)
-    return pathOut
+    convert_frames_to_video_diff(pathx, newpath, fps)
+    return pathOut,newpath
