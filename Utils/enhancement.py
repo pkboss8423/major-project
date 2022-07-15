@@ -1,4 +1,3 @@
-from turtle import color
 from EnchanmentAlgo.claheEnchancer import CLAHE
 from EnchanmentAlgo.aheEnchancer import AHE
 from EnchanmentAlgo.histogramEqualization import calculate_histogram
