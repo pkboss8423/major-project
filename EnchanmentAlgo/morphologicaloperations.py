@@ -21,7 +21,6 @@ def dilation(image):
 def opening(image):
     st.header("Opening:")
     kernelSizes = [(3, 3), (5, 5), (7, 7), (9, 9), (11, 11)]
-
     # loop over the kernels sizes
     for kernelSize in kernelSizes:
         # construct a rectangular kernel from the current size and then
@@ -36,7 +35,6 @@ def closing(image):
     st.header("Closing:")
     kernelSizes = [(3, 3), (5, 5), (7, 7), (9, 9), (11, 11)]
     for kernelSize in kernelSizes:
-
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, kernelSize)
         closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
         st.image(closing, caption="Closing: ({}, {})".format(
@@ -56,10 +54,4 @@ def morphological_gradient(image):
             kernelSize[0], kernelSize[1]))
 
 
-def blackhat_tophat(image):
-    st.header("Blackhat Tophat:")
-    rectKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (13, 5))
-    blackhat = cv2.morphologyEx(image, cv2.MORPH_BLACKHAT, rectKernel)
-    tophat = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, rectKernel)
-    st.image(blackhat, caption="BlackHat")
-    st.image(tophat, caption="TopHat")
+

@@ -1,5 +1,6 @@
 import os
 
+#this functions prints the video sizes
 def get_size(st,pathIn,pathOut,type):
     original_size = os.path.getsize(pathIn)
     final_size = os.path.getsize(pathOut)

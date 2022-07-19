@@ -5,15 +5,16 @@ from requests import head
 
 from Utils.createFolder import create_data_sets
 
-
+#this functions reads the compression ratio column of the dataset and converts it into an array
 def check_cr(path):
     filename = open(path)
     file = csv.DictReader(filename)
     Comp_ratio = []
     for col in file:
-        
         Comp_ratio.append(col['Compression ratio'])
     return Comp_ratio
+
+#to reduce duplication
 def check(path):
     filename=open(path)
     file = csv.DictReader(filename)
@@ -23,7 +24,9 @@ def check(path):
         files.append(col['File Name'])
         
     return files
-    
+
+
+#this function adds another row to an existing dataset or creates a new dataset if not present    
 def add_row(row,type):
     header = ['File Name', 'Original Size(MB)',
               'Compressed Size(MB)', 'Compression ratio']

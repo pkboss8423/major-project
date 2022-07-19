@@ -2,7 +2,7 @@ import os
 
 import cv2
 
-
+#this function is not in use yet
 def clahe_queue(files):
 
     filesFound = [files]

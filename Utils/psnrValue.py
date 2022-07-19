@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-
+#this file calculates PSNR values
 def PSNR(img1, img2):
     psnr = cv2.PSNR(img1, img2)
     return psnr

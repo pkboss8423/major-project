@@ -12,7 +12,6 @@ def create_major_folder():
 
 
 def create_image_folder():
-    
     path = create_major_folder()
     if not os.path.exists(path+"/Compressed_images"):
         os.makedirs(path+"/Compressed_images")
@@ -21,7 +20,6 @@ def create_image_folder():
 
 
 def create_video_folder():
-    
     path = create_major_folder()
     if not os.path.exists(path+"/Compressed_videos"):
         os.makedirs(path+"/Compressed_videos")
@@ -30,7 +28,6 @@ def create_video_folder():
 
 
 def create_video_frames():
-    userprofile = os.environ['USERPROFILE']
     path = create_video_folder()
     if not os.path.exists(path+"/Video_frames"):
         os.makedirs(path+"/Video_frames")
@@ -39,7 +36,6 @@ def create_video_frames():
 
 
 def create_data_sets():
-    
     path = create_major_folder()
     if not os.path.exists(path+"/Data_sets"):
         os.makedirs(path+"/Data_sets")

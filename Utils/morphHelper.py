@@ -4,7 +4,10 @@ from UploadHelper.imageUploadHelper import image_Read
 
 def morph(path,types):
     
+    # read image and covert rgb to bgr
     image = image_Read(path)
+    
+    #types is an array
     if "None" in types:
         return
     elif len(types)==0:
