@@ -5,7 +5,7 @@ import streamlit as st
 
 def erosion(image):
     st.header("Erosion:")
-    for i in range(0, 3):
+    for i in range(0, 5):
         eroded = cv2.erode(image.copy(), None, iterations=i + 1)
         st.image(eroded, caption="Eroded {} times".format(i + 1))
 
@@ -13,7 +13,7 @@ def erosion(image):
 def dilation(image):
     st.header("Dilation:")
     # apply a series of dilations
-    for i in range(0, 3):
+    for i in range(0, 5):
         dilated = cv2.dilate(image.copy(), None, iterations=i + 1)
         st.image(dilated, caption="Dilated {} times".format(i + 1))
 
